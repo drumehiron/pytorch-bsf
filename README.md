@@ -17,10 +17,16 @@ Python 3.8 or above.
 
 ## How to use
 
-Install the package:
+<!-- Install the package:
 ```
 $ pip install git+https://github.com/rafcc/pytorch-bsf
+``` -->
+
+Install the package:
 ```
+$ pip install git+https://github.com/drumehiron/pytorch-bsf
+```
+
 
 Train a model by `fit()`, and call the model to predict.
 ```python
