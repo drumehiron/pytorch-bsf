@@ -94,7 +94,7 @@ class BezierSimplexDataModule(pl.LightningDataModule):
             batch_size=self.batch_size or len(self.trainset),
         )
         return train_loader
-        
+
     def val_dataloader(self) -> DataLoader:
         # OPTIONAL
         val_loader = DataLoader(
@@ -102,7 +102,7 @@ class BezierSimplexDataModule(pl.LightningDataModule):
             batch_size=self.batch_size or len(self.valset),
         )
         return val_loader
-        
+
     def test_dataloader(self) -> DataLoader:
         # OPTIONAL
         return self.val_dataloader()
@@ -168,7 +168,7 @@ def monomial(var: Iterable[float], deg: Iterable[int]) -> torch.Tensor:
         The bases.
     deg
         The powers.
-    
+
     Returns
     -------
     monomial
@@ -191,7 +191,7 @@ class BezierSimplex(pl.LightningModule):
         The number of values.
     degree
         The degree of the Bezier simplex.
-    
+
     Examples
     --------
     >>> ts = torch.tensor(  # parameters on a simplex
@@ -250,7 +250,7 @@ class BezierSimplex(pl.LightningModule):
         Returns
         -------
         x
-            A minibatch of value vectors. 
+            A minibatch of value vectors.
 
         """
         # REQUIRED
@@ -267,7 +267,7 @@ class BezierSimplex(pl.LightningModule):
         tensorboard_logs = {'train_loss': loss}
         self.log("train_mse", loss, sync_dist=True)
         return {'loss': loss, 'log': tensorboard_logs}
- 
+
     def validation_step(self, batch, batch_idx) -> Dict[str, Any]:
         # OPTIONAL
         x, y = batch
@@ -277,14 +277,14 @@ class BezierSimplex(pl.LightningModule):
         self.log("val_mse", mse, sync_dist=True)
         self.log("val_mae", mae, sync_dist=True)
         return {'val_loss': mse}
- 
+
     def validation_end(self, outputs) -> Dict[str, Any]:
         # OPTIONAL
         avg_loss = torch.stack([x['val_loss'] for x in outputs]).mean()
         tensorboard_logs = {'val_loss': avg_loss}
         self.log("val_avg_mse", avg_loss, sync_dist=True)
         return {'avg_val_loss': avg_loss, 'log': tensorboard_logs}
- 
+
     def test_step(self, batch, batch_idx) -> Dict[str, Any]:
         # OPTIONAL
         x, y = batch
@@ -299,7 +299,7 @@ class BezierSimplex(pl.LightningModule):
         # REQUIRED
         optimizer = torch.optim.LBFGS(self.parameters())
         return optimizer
- 
+
     def meshgrid(self, num: int = 100) -> Tuple[torch.Tensor, torch.Tensor]:
         """Computes a meshgrid of the Bezier simplex.
 
@@ -329,10 +329,10 @@ def fit(
     max_epochs: int=1000,
     gpus: Union[str, int, List[int]]=-1,
     num_nodes: int=1,
-    accelerator: str="ddp",
+    accelerator: str=None,
 ) -> BezierSimplex:
     """Fits a Bezier simplex.
-    
+
     Parameters
     ----------
     params
@@ -351,12 +351,12 @@ def fit(
         The number of compute nodes.
     accelerator
         Distributed mode.
-    
+
     Returns
     -------
     bs
         A trained Bezier simplex.
-    
+
     Examples
     --------
     >>> import torch
@@ -400,6 +400,8 @@ def fit(
         accelerator=accelerator,
         num_nodes=num_nodes,
         max_epochs=max_epochs,
+        checkpoint_callback=False,
+        logger=False
     )
     trainer.fit(bs, dl)
     return bs
